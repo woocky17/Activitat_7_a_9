@@ -1,16 +1,4 @@
 {
-    "usuarios": [
-        {
-            "id": "u1",
-            "nombre": "david",
-            "email": "david@gmail.com"
-        },
-        {
-            "id": "u2",
-            "nombre": "marc",
-            "email": "marc@gmail.com.com"
-        }
-    ],
     "parejas": [
         {
             "id": "p1",

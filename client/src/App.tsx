@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import Login from "./components/Login";
+import '@mantine/core/styles.css';
+import { MantineProvider } from '@mantine/core';
 
 const App: React.FC = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -28,16 +31,19 @@ const App: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1>Chat REST → WebSocket</h1>
-      <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Escribe un mensaje" />
-      <button onClick={sendMessage}>Enviar</button>
+    <MantineProvider>
+      <Login />
       <div>
-        {messages.map((msg, i) => (
-          <p key={i}>{msg}</p>
-        ))}
+        <h1>Chat REST → WebSocket</h1>
+        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Escribe un mensaje" />
+        <button onClick={sendMessage}>Enviar</button>
+        <div>
+          {messages.map((msg, i) => (
+            <p key={i}>{msg}</p>
+          ))}
+        </div>
       </div>
-    </div>
+    </MantineProvider>
   );
 };
 

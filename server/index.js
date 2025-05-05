@@ -45,7 +45,8 @@ server.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
 });
 
-app.post("/login", (req, res) => {
+app.post("/api/login", (req, res) => {
+  
   const { username, password } = req.body;
 
   if (!username || !password)

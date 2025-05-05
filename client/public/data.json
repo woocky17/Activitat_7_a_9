@@ -2,13 +2,13 @@
     "usuarios": [
         {
             "id": "u1",
-            "nombre": "Profesor",
-            "email": "profesor@centro.com"
+            "nombre": "david",
+            "email": "david@gmail.com"
         },
         {
             "id": "u2",
-            "nombre": "Ana",
-            "email": "ana@centro.com"
+            "nombre": "marc",
+            "email": "marc@gmail.com.com"
         }
     ],
     "parejas": [
@@ -25,10 +25,11 @@
     "salas": [
         {
             "id": "s1",
-            "nombre": "Sala Profesor",
+            "nombre": "Sala Publica",
             "tipo": "publica",
             "participantes": [
-                "u1"
+                "u1",
+                "u2"
             ]
         }
     ],
@@ -46,7 +47,7 @@
             "id": "m1",
             "salaId": "s1",
             "emisorId": "u1",
-            "contenido": "Hola, esta es la sala del profesor.",
+            "contenido": "Hola, esta es la sala publica.",
             "timestamp": "2025-04-20T10:00:00"
         },
         {
@@ -59,24 +60,16 @@
         {
             "id": "m3",
             "salaId": "s3",
-            "emisorId": "u2",
-            "contenido": "Hola Luis, ¿hacemos el ejercicio juntos?",
+            "emisorId": "u1",
+            "contenido": "Hola Marc, ¿hacemos el ejercicio juntos?",
             "timestamp": "2025-04-20T10:10:00"
         },
         {
             "id": "m4",
             "salaId": "s3",
-            "emisorId": "u3",
+            "emisorId": "u2",
             "contenido": "Sí, perfecto. Empiezo con el login.",
             "timestamp": "2025-04-20T10:12:00"
-        },
-        {
-            "id": "m5",
-            "salaId": "s3",
-            "emisorId": "u2",
-            "tipo": "sistema",
-            "contenido": "Se ha creado un documento colaborativo para esta sala.",
-            "timestamp": "2025-04-20T10:15:00"
         }
     ]
 }

@@ -1,7 +1,7 @@
 import express from "express";
 import http from "http";
 import { WebSocketServer } from "ws";
-
+import cors from "cors";
 import users from "./data.js";
 
 const app = express();
@@ -12,32 +12,28 @@ app.use(express.json());
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
-import cors from "cors";
 
-// WebSocket solo para emitir mensajes
 wss.on("connection", (ws) => {
   console.log("Cliente conectado");
+
   ws.on("close", () => {
     console.log("Cliente desconectado");
   });
 });
 
-// Endpoint para enviar mensaje a todos los WebSocket conectados
 app.post("/api/message", (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: "Mensaje vacío" });
 
+  const payload = JSON.stringify({ type: "broadcast", message });
+
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
+      client.send(payload);
     }
   });
 
   res.json({ sent: true });
-});
-
-server.listen(port, () => {
-  console.log(`Servidor escuchando en http://localhost:${port}`);
 });
 
 app.post("/api/login", (req, res) => {
@@ -55,4 +51,33 @@ app.post("/api/login", (req, res) => {
     message: "Inicio de sesión exitoso",
     nombre: user.nombre,
   });
+});
+
+app.post("/api/chat", (req, res) => {
+  const { message, sender } = req.body;
+
+  if (!message || !sender) {
+    return res.status(400).json({ error: "Mensaje o remitente faltante" });
+  }
+
+  const chatMessage = {
+    type: "chat",
+    message,
+    sender,
+    timestamp: new Date().toISOString(),
+  };
+
+  const payload = JSON.stringify(chatMessage);
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(payload);
+    }
+  });
+
+  res.json({ success: true });
+});
+
+server.listen(port, () => {
+  console.log(`Servidor escuchando en http://localhost:${port}`);
 });

@@ -53,6 +53,6 @@ app.post("/api/login", (req, res) => {
   res.json({
     success: true,
     message: "Inicio de sesión exitoso",
-    email,
+    nombre: user.nombre,
   });
 });

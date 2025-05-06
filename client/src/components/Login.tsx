@@ -18,7 +18,7 @@ interface Props {
 }
 
 function Login({ opened, onClose, onLoginSuccess }: Props) {
-  const [username, setUsername] = useState("");
+  const [email, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -30,13 +30,14 @@ function Login({ opened, onClose, onLoginSuccess }: Props) {
       const res = await fetch("http://localhost:4000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
+      console.log(data);
 
       if (res.ok) {
-        onLoginSuccess(data.email); // Pasar el email del usuario autenticado
+        onLoginSuccess(data.nombre);
       } else {
         setError(data.error || "Error desconocido");
       }
@@ -64,7 +65,7 @@ function Login({ opened, onClose, onLoginSuccess }: Props) {
               <TextInput
                 label="Usuario"
                 placeholder="Tu nombre de usuario"
-                value={username}
+                value={email}
                 onChange={(e) => setUsername(e.currentTarget.value)}
                 required
               />

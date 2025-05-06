@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Login from "./components/Login";
 import "@mantine/core/styles.css";
-import { MantineProvider } from "@mantine/core";
+import { Button, MantineProvider } from "@mantine/core";
 
 const App: React.FC = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Estado para autenticación
+  const [user, setUser] = useState<string>("");
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:4000");
@@ -31,8 +32,9 @@ const App: React.FC = () => {
     setInput("");
   };
 
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true); // Marcar como autenticado
+  const handleLoginSuccess = (username: string) => {
+    setIsAuthenticated(true);
+    setUser(username);
   };
 
   return (
@@ -52,10 +54,14 @@ const App: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Escribe un mensaje"
           />
-          <button onClick={sendMessage}>Enviar</button>
+          <Button variant="outline" onClick={sendMessage}>
+            Enviar
+          </Button>
           <div>
             {messages.map((msg, i) => (
-              <p key={i}>{msg}</p>
+              <p key={i}>
+                {user}: {msg}
+              </p>
             ))}
           </div>
         </div>

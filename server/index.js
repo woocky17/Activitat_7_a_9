@@ -98,7 +98,6 @@ app.post("/api/save_hist", (req, res) => {
 
   const filePath = path.join(__dirname, "historial.json");
 
-  // Leer el archivo historial.json
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err) {
       console.error("Error al leer el archivo:", err);
@@ -112,10 +111,8 @@ app.post("/api/save_hist", (req, res) => {
       console.error("Error al parsear el archivo:", parseError);
     }
 
-    // Agregar el nuevo mensaje al historial
     historial.push({ sender, message, timestamp: new Date().toISOString() });
 
-    // Guardar el historial actualizado
     fs.writeFile(filePath, JSON.stringify(historial, null, 2), (writeErr) => {
       if (writeErr) {
         console.error("Error al escribir en el archivo:", writeErr);

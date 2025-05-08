@@ -26,7 +26,7 @@ const Chat: React.FC<ChatProps> = ({
   socket,
   username,
 }) => {
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input || !socket) {
       console.log(
         "No se puede enviar el mensaje: input vacío o socket no conectado."
@@ -37,9 +37,32 @@ const Chat: React.FC<ChatProps> = ({
     const message = { autor: username, contenido: input };
     console.log("Enviando mensaje:", message);
 
-    socket.send(JSON.stringify(message));
+    // Enviar mensaje al WebSocket
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(message));
+    } else {
+      console.error("WebSocket no está abierto.");
+    }
     messages.push(`${username}: ${input}`);
     setInput("");
+
+    // Guardar el mensaje en el historial a través del endpoint
+    try {
+      const response = await fetch("http://localhost:4000/api/save_hist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: input,
+          sender: username,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error al guardar el historial:", await response.json());
+      }
+    } catch (error) {
+      console.error("Error de conexión al guardar el historial:", error);
+    }
   };
 
   return (

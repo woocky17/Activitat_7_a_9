@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import users from "./data.js";
+import users from "./users.js";
 
 const app = express();
 const port = 4000;
@@ -22,6 +22,19 @@ const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
   console.log("Cliente conectado");
+
+  ws.on("message", (data) => {
+    const message = JSON.parse(data);
+
+    if (message.type === "chat") {
+      // Retransmitir el mensaje a todos los clientes conectados
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(message));
+        }
+      });
+    }
+  });
 
   ws.on("close", () => {
     console.log("Cliente desconectado");
@@ -123,5 +136,41 @@ app.post("/api/save_hist", (req, res) => {
 
       res.status(200).json({ message: "Historial guardado correctamente." });
     });
+  });
+});
+
+app.get("/api/view_hist", (req, res) => {
+  const filePath = path.join(__dirname, "historial.json");
+  const format = req.query.format || "json";
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error al leer el archivo:", err);
+      return res.status(500).json({ error: "Error al leer el historial." });
+    }
+
+    try {
+      const historial = JSON.parse(data);
+
+      if (format === "txt") {
+        const txtContent = historial
+          .map(
+            (entry) => `${entry.timestamp} - ${entry.sender}: ${entry.message}`
+          )
+          .join("\n");
+
+        res.setHeader("Content-Type", "text/plain");
+        res.setHeader(
+          "Content-Disposition",
+          "attachment; filename=historial.txt"
+        );
+        return res.send(txtContent);
+      }
+
+      res.json(historial);
+    } catch (parseError) {
+      console.error("Error al parsear el archivo:", parseError);
+      res.status(500).json({ error: "Error al procesar el historial." });
+    }
   });
 });

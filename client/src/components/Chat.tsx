@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -10,60 +10,75 @@ import {
   Title,
   Paper,
 } from "@mantine/core";
+import { getHistorial } from "../services/getHistService";
+import { MensajeChat } from "../types/MensajeChat";
 
 interface ChatProps {
-  messages: string[];
-  input: string;
-  setInput: (value: string) => void;
   socket: WebSocket | null;
   username: string;
 }
 
-const Chat: React.FC<ChatProps> = ({
-  messages,
-  input,
-  setInput,
-  socket,
-  username,
-}) => {
-  const sendMessage = async () => {
-    if (!input || !socket) {
-      console.log(
-        "No se puede enviar el mensaje: input vacío o socket no conectado."
-      );
-      return;
-    }
+const Chat: React.FC<ChatProps> = ({ socket, username }) => {
+  const [messages, setMessages] = useState<MensajeChat[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(true); // Estado para manejar la carga inicial
 
-    const message = { autor: username, contenido: input };
-    console.log("Enviando mensaje:", message);
+  useEffect(() => {
+    const fetchHistorial = async () => {
+      const historial = await getHistorial();
+      setMessages(historial); // Cargar el historial en el estado de mensajes
+      setLoading(false); // Marcar como cargado
+    };
 
-    // Enviar mensaje al WebSocket
-    if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(message));
-    } else {
-      console.error("WebSocket no está abierto.");
-    }
-    messages.push(`${username}: ${input}`);
-    setInput("");
+    fetchHistorial();
+  }, []);
+  // Manejar mensajes recibidos en tiempo real
+  useEffect(() => {
+    if (!socket) return;
 
-    // Guardar el mensaje en el historial a través del endpoint
-    try {
-      const response = await fetch("http://localhost:4000/api/save_hist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: input,
-          sender: username,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Error al guardar el historial:", await response.json());
+    const handleMessage = (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "chat") {
+        setMessages((prev) => [...prev, data]);
       }
-    } catch (error) {
-      console.error("Error de conexión al guardar el historial:", error);
-    }
+    };
+
+    socket.addEventListener("message", handleMessage);
+
+    return () => {
+      socket.removeEventListener("message", handleMessage);
+    };
+  }, [socket]);
+
+  // Enviar mensaje al servidor
+  const sendMessage = () => {
+    if (!input || !socket) return;
+
+    const message = {
+      sender: username,
+      message: input,
+      timestamp: new Date().toISOString(),
+    };
+
+    socket.send(JSON.stringify({ type: "chat", ...message }));
+    setInput(""); // Limpiar el campo de entrada
   };
+
+  if (loading) {
+    return (
+      <Card
+        shadow="md"
+        padding="xl"
+        radius="lg"
+        withBorder
+        style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}
+      >
+        <Title order={2} ta="center" c="blue.7">
+          Cargando historial...
+        </Title>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -75,7 +90,7 @@ const Chat: React.FC<ChatProps> = ({
     >
       <Stack gap="md">
         <Title order={2} ta="center" c="blue.7">
-          Chat REST → WebSocket
+          Chat en Tiempo Real
         </Title>
 
         <ScrollArea h={300} offsetScrollbars scrollbarSize={6}>
@@ -86,9 +101,13 @@ const Chat: React.FC<ChatProps> = ({
                 shadow="xs"
                 radius="md"
                 p="sm"
-                bg={msg.startsWith(username) ? "blue.0" : "gray.0"}
+                bg={msg.sender === username ? "blue.0" : "gray.0"}
               >
-                <Text size="sm">{msg}</Text>
+                <Text size="sm">
+                  <strong>{msg.sender}</strong>: {msg.message}
+                  <br />
+                  <small>{new Date(msg.timestamp).toLocaleString()}</small>
+                </Text>
               </Paper>
             ))}
           </Stack>

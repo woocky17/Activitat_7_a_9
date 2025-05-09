@@ -51,7 +51,7 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
     };
   }, [socket]);
 
-  // Enviar mensaje al servidor
+  // Enviar mensaje
   const sendMessage = () => {
     if (!input || !socket) return;
 

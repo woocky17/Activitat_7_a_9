@@ -103,9 +103,9 @@ server.listen(port, () => {
 });
 
 app.post("/api/save_hist", (req, res) => {
-  const { message, sender } = req.body;
+  const message = req.body;
 
-  if (!message || !sender) {
+  if (!message) {
     return res.status(400).json({ error: "Faltan datos en la solicitud." });
   }
 
@@ -124,7 +124,7 @@ app.post("/api/save_hist", (req, res) => {
       console.error("Error al parsear el archivo:", parseError);
     }
 
-    historial.push({ sender, message, timestamp: new Date().toISOString() });
+    historial.push(message);
 
     fs.writeFile(filePath, JSON.stringify(historial, null, 2), (writeErr) => {
       if (writeErr) {

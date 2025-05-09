@@ -11,7 +11,8 @@ import {
   Paper,
 } from "@mantine/core";
 import { getHistorial } from "../services/getHistService";
-import { MensajeChat } from "../types/MensajeChat";
+import { MessageChat } from "../types/MessageChat";
+import saveHistService from "../services/saveHistService";
 
 interface ChatProps {
   socket: WebSocket | null;
@@ -19,7 +20,7 @@ interface ChatProps {
 }
 
 const Chat: React.FC<ChatProps> = ({ socket, username }) => {
-  const [messages, setMessages] = useState<MensajeChat[]>([]);
+  const [messages, setMessages] = useState<MessageChat[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true); // Estado para manejar la carga inicial
 
@@ -59,6 +60,8 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
       message: input,
       timestamp: new Date().toISOString(),
     };
+
+    saveHistService(message); // Guardar el mensaje en el historial
 
     socket.send(JSON.stringify({ type: "chat", ...message }));
     setInput(""); // Limpiar el campo de entrada

@@ -1,6 +1,6 @@
 import { MessageChat } from "../types/MessageChat";
 
-export const getHistorial = async (): Promise<MessageChat[]> => {
+export const fetchHistorialService = async (): Promise<MessageChat[]> => {
   try {
     const response = await fetch("http://localhost:4000/api/view_hist");
     if (!response.ok) {

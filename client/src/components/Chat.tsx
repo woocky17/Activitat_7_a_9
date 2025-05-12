@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -10,61 +10,87 @@ import {
   Title,
   Paper,
 } from "@mantine/core";
+import saveHistService from "../services/saveHistService";
+import { useFetchHistorial } from "../hooks/useFetchHistorial";
 
 interface ChatProps {
-  messages: string[];
-  input: string;
-  setInput: (value: string) => void;
-  socket: WebSocket | null;
-  username: string;
+  socket: WebSocket | null; // WebSocket connection for real-time communication
+  username: string; // Username of the current user
 }
 
-const Chat: React.FC<ChatProps> = ({
-  messages,
-  input,
-  setInput,
-  socket,
-  username,
-}) => {
-  const sendMessage = async () => {
-    if (!input || !socket) {
-      console.log(
-        "No se puede enviar el mensaje: input vacío o socket no conectado."
-      );
-      return;
-    }
+const Chat: React.FC<ChatProps> = ({ socket, username }) => {
+  const [input, setInput] = useState(""); // State to store the current input message
 
-    const message = { autor: username, contenido: input };
-    console.log("Enviando mensaje:", message);
+  const { error, messages, loading, setMessages } = useFetchHistorial(); // Custom hook to fetch chat history
 
-    // Enviar mensaje al WebSocket
-    if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(message));
-    } else {
-      console.error("WebSocket no está abierto.");
-    }
-    messages.push(`${username}: ${input}`);
-    setInput("");
+  // Handle real-time messages received via WebSocket
+  useEffect(() => {
+    if (!socket) return;
 
-    // Guardar el mensaje en el historial a través del endpoint
-    try {
-      const response = await fetch("http://localhost:4000/api/save_hist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: input,
-          sender: username,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Error al guardar el historial:", await response.json());
+    const handleMessage = (event: MessageEvent) => {
+      const data = JSON.parse(event.data); // Parse the incoming message
+      if (data.type === "chat") {
+        setMessages((prev) => [...prev, data]); // Append the new message to the state
       }
-    } catch (error) {
-      console.error("Error de conexión al guardar el historial:", error);
-    }
+    };
+
+    socket.addEventListener("message", handleMessage); // Listen for incoming messages
+
+    return () => {
+      socket.removeEventListener("message", handleMessage); // Cleanup the listener on unmount
+    };
+  }, [setMessages, socket]);
+
+  // Show error message if there's an error fetching the chat history
+  if (error) {
+    return (
+      <Card
+        shadow="md"
+        padding="xl"
+        radius="lg"
+        withBorder
+        style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}
+      >
+        <Title order={2} ta="center" c="red.7">
+          Error: {error}
+        </Title>
+      </Card>
+    );
+  }
+  // Function to send a message
+  const sendMessage = () => {
+    if (!input || !socket) return; // Do nothing if input is empty or socket is unavailable
+
+    const message = {
+      sender: username, // Current user's username
+      message: input, // Message content
+      timestamp: new Date().toISOString(), // Current timestamp
+    };
+
+    saveHistService(message); // Save the message to the history service
+
+    socket.send(JSON.stringify({ type: "chat", ...message })); // Send the message via WebSocket
+    setInput(""); // Clear the input field
   };
 
+  // Show a loading card while the chat history is being fetched
+  if (loading) {
+    return (
+      <Card
+        shadow="md"
+        padding="xl"
+        radius="lg"
+        withBorder
+        style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}
+      >
+        <Title order={2} ta="center" c="blue.7">
+          Cargando historial...
+        </Title>
+      </Card>
+    );
+  }
+
+  // Render the chat interface
   return (
     <Card
       shadow="md"
@@ -75,9 +101,10 @@ const Chat: React.FC<ChatProps> = ({
     >
       <Stack gap="md">
         <Title order={2} ta="center" c="blue.7">
-          Chat REST → WebSocket
+          Chat en Tiempo Real
         </Title>
 
+        {/* Scrollable area to display chat messages */}
         <ScrollArea h={300} offsetScrollbars scrollbarSize={6}>
           <Stack gap="xs">
             {messages.map((msg, i) => (
@@ -86,24 +113,30 @@ const Chat: React.FC<ChatProps> = ({
                 shadow="xs"
                 radius="md"
                 p="sm"
-                bg={msg.startsWith(username) ? "blue.0" : "gray.0"}
+                bg={msg.sender === username ? "blue.0" : "gray.0"} // Different background for sent/received messages
               >
-                <Text size="sm">{msg}</Text>
+                <Text size="sm">
+                  <strong>{msg.sender}</strong>: {msg.message}
+                  <br />
+                  <small>{new Date(msg.timestamp).toLocaleString()}</small>{" "}
+                  {/* Format the timestamp */}
+                </Text>
               </Paper>
             ))}
           </Stack>
         </ScrollArea>
 
+        {/* Input field and send button */}
         <Group grow>
           <TextInput
             placeholder="Escribe un mensaje"
             value={input}
-            onChange={(e) => setInput(e.currentTarget.value)}
+            onChange={(e) => setInput(e.currentTarget.value)} // Update input state on change
             radius="md"
             size="md"
           />
           <Button
-            onClick={sendMessage}
+            onClick={sendMessage} // Trigger sendMessage on click
             variant="filled"
             color="blue"
             radius="md"

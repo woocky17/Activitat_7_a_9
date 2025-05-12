@@ -6,8 +6,6 @@ import { MantineProvider } from "@mantine/core";
 
 const App: React.FC = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [messages, setMessages] = useState<string[]>([]);
-  const [input, setInput] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<string>("");
 
@@ -15,9 +13,6 @@ const App: React.FC = () => {
     const ws = new WebSocket("ws://localhost:4000");
 
     ws.onopen = () => console.log("Conectado al WebSocket");
-    ws.onmessage = (event) => {
-      setMessages((prev) => [...prev, event.data]);
-    };
 
     setSocket(ws);
     return () => ws.close();
@@ -37,15 +32,7 @@ const App: React.FC = () => {
           onLoginSuccess={handleLoginSuccess}
         />
       )}
-      {isAuthenticated && (
-        <Chat
-          messages={messages}
-          input={input}
-          setInput={setInput}
-          socket={socket}
-          username={user}
-        />
-      )}
+      {isAuthenticated && <Chat socket={socket} username={user} />}
     </MantineProvider>
   );
 };

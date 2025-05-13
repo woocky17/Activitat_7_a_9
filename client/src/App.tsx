@@ -6,36 +6,47 @@ import { Button, MantineProvider } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 
 const App: React.FC = () => {
+  // Estado para manejar la conexión WebSocket
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  // Usar useLocalStorage en vez de useState para persistencia
+
+  // Estado persistente para saber si el usuario está autenticado
   const [isAuthenticated, setIsAuthenticated] = useLocalStorage<boolean>({
     key: "isAuthenticated",
     defaultValue: false,
   });
+
+  // Estado persistente para almacenar el nombre del usuario autenticado
   const [user, setUser] = useLocalStorage<string>({
     key: "user",
     defaultValue: "",
   });
 
+  // useEffect para establecer la conexión WebSocket al montar el componente
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:4000");
     ws.onopen = () => console.log("Conectado al WebSocket");
     setSocket(ws);
+
+    // Cerrar conexión WebSocket al desmontar el componente
     return () => ws.close();
   }, []);
 
+  // Función que se llama cuando el login es exitoso
   const handleLoginSuccess = (username: string) => {
     setIsAuthenticated(true);
     setUser(username);
   };
 
+  // Función para cerrar sesión y limpiar estados
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUser("");
   };
 
   return (
+    // Proveedor de Mantine para estilos y configuración del tema
     <MantineProvider>
+      {/* Mostrar login si el usuario no está autenticado */}
       {!isAuthenticated && (
         <Login
           opened={!isAuthenticated}
@@ -43,8 +54,11 @@ const App: React.FC = () => {
           onLoginSuccess={handleLoginSuccess}
         />
       )}
+
+      {/* Mostrar el chat si el usuario está autenticado */}
       {isAuthenticated && (
         <>
+          {/* Botón para cerrar sesión */}
           <Button
             onClick={handleLogout}
             color="red"
@@ -52,6 +66,8 @@ const App: React.FC = () => {
           >
             Cerrar sesión
           </Button>
+
+          {/* Componente del chat que recibe el socket y el nombre del usuario */}
           <Chat socket={socket} username={user} />
         </>
       )}

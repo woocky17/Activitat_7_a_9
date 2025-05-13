@@ -10,27 +10,35 @@ import {
   Title,
   Paper,
 } from "@mantine/core";
+
+// Hooks personalizados para manejar historial
 import { useFetchHistorial } from "../hooks/useFetchHistorial";
 import { useSaveHistorialService } from "../hooks/useSaveHistorialService";
 import { useDownloadHistorialService } from "../hooks/useDownloadHistorialService";
 
+// Props esperadas: conexión WebSocket y nombre del usuario
 interface ChatProps {
-  socket: WebSocket | null; // WebSocket connection for real-time communication
-  username: string; // Username of the current user
+  socket: WebSocket | null;
+  username: string;
 }
 
 const Chat: React.FC<ChatProps> = ({ socket, username }) => {
-  const [input, setInput] = useState(""); // State to store the current input message
+  const [input, setInput] = useState(""); // Mensaje actual escrito por el usuario
 
-  const { error, messages, loading, setMessages } = useFetchHistorial(); // Custom hook to fetch chat history
+  // Cargar historial desde API
+  const { error, messages, loading, setMessages } = useFetchHistorial();
+
+  // Guardar mensaje en historial
   const { saveHistorial } = useSaveHistorialService();
+
+  // Descargar historial en formato JSON
   const {
     downloadHistorial,
     loading: downloading,
     error: downloadError,
   } = useDownloadHistorialService();
 
-  // Función para descargar el historial
+  // Descargar historial como archivo
   const handleDownloadHistorial = async () => {
     const blob = await downloadHistorial();
     if (blob) {
@@ -45,25 +53,22 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
     }
   };
 
-  // Handle real-time messages received via WebSocket
+  // Escuchar mensajes entrantes vía WebSocket
   useEffect(() => {
     if (!socket) return;
 
     const handleMessage = (event: MessageEvent) => {
-      const data = JSON.parse(event.data); // Parse the incoming message
+      const data = JSON.parse(event.data);
       if (data.type === "chat") {
-        setMessages((prev) => [...prev, data]); // Append the new message to the state
+        setMessages((prev) => [...prev, data]); // Agregar nuevo mensaje al estado
       }
     };
 
-    socket.addEventListener("message", handleMessage); // Listen for incoming messages
-
-    return () => {
-      socket.removeEventListener("message", handleMessage); // Cleanup the listener on unmount
-    };
+    socket.addEventListener("message", handleMessage);
+    return () => socket.removeEventListener("message", handleMessage);
   }, [setMessages, socket]);
 
-  // Show error message if there's an error fetching the chat history
+  // Mostrar error si falla la carga del historial
   if (error) {
     return (
       <Card
@@ -79,23 +84,23 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
       </Card>
     );
   }
-  // Function to send a message
+
+  // Enviar mensaje
   const sendMessage = () => {
-    if (!input || !socket) return; // Do nothing if input is empty or socket is unavailable
+    if (!input || !socket) return;
 
     const message = {
-      sender: username, // Current user's username
-      message: input, // Message content
-      timestamp: new Date().toISOString(), // Current timestamp
+      sender: username,
+      message: input,
+      timestamp: new Date().toISOString(),
     };
 
-    saveHistorial(message); // Save the message to the history service
-
-    socket.send(JSON.stringify({ type: "chat", ...message })); // Send the message via WebSocket
-    setInput(""); // Clear the input field
+    saveHistorial(message); // Guardar en historial
+    socket.send(JSON.stringify({ type: "chat", ...message })); // Enviar por WebSocket
+    setInput(""); // Limpiar input
   };
 
-  // Show a loading card while the chat history is being fetched
+  // Mostrar "Cargando..." mientras se obtiene el historial
   if (loading) {
     return (
       <Card
@@ -112,7 +117,7 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
     );
   }
 
-  // Render the chat interface
+  // Interfaz principal del chat
   return (
     <Card
       shadow="md"
@@ -137,13 +142,15 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
         >
           Descargar historial
         </Button>
+
+        {/* Mensaje de error al descargar historial */}
         {downloadError && (
           <Text c="red" size="sm" ta="center">
             Error al descargar historial
           </Text>
         )}
 
-        {/* Scrollable area to display chat messages */}
+        {/* Mostrar mensajes en scroll */}
         <ScrollArea h={300} offsetScrollbars scrollbarSize={6}>
           <Stack gap="xs">
             {messages.map((msg, i) => (
@@ -152,30 +159,29 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
                 shadow="xs"
                 radius="md"
                 p="sm"
-                bg={msg.sender === username ? "blue.0" : "gray.0"} // Different background for sent/received messages
+                bg={msg.sender === username ? "blue.0" : "gray.0"}
               >
                 <Text size="sm">
                   <strong>{msg.sender}</strong>: {msg.message}
                   <br />
-                  <small>{new Date(msg.timestamp).toLocaleString()}</small>{" "}
-                  {/* Format the timestamp */}
+                  <small>{new Date(msg.timestamp).toLocaleString()}</small>
                 </Text>
               </Paper>
             ))}
           </Stack>
         </ScrollArea>
 
-        {/* Input field and send button */}
+        {/* Input y botón de enviar */}
         <Group grow>
           <TextInput
             placeholder="Escribe un mensaje"
             value={input}
-            onChange={(e) => setInput(e.currentTarget.value)} // Update input state on change
+            onChange={(e) => setInput(e.currentTarget.value)}
             radius="md"
             size="md"
           />
           <Button
-            onClick={sendMessage} // Trigger sendMessage on click
+            onClick={sendMessage}
             variant="filled"
             color="blue"
             radius="md"

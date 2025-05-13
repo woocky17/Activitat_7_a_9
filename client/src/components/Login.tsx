@@ -12,16 +12,17 @@ import {
 } from "@mantine/core";
 
 interface Props {
-  opened: boolean;
-  onClose: () => void;
-  onLoginSuccess: (email: string) => void;
+  opened: boolean; // Controla la visibilidad del modal
+  onClose: () => void; // Cierra el modal
+  onLoginSuccess: (email: string) => void; // Lógica a ejecutar si el login es exitoso
 }
 
 function Login({ opened, onClose, onLoginSuccess }: Props) {
-  const [email, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setUsername] = useState(""); // Campo de usuario
+  const [password, setPassword] = useState(""); // Campo de contraseña
+  const [error, setError] = useState(""); // Manejo de errores
 
+  // Enviar formulario al backend
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -37,7 +38,7 @@ function Login({ opened, onClose, onLoginSuccess }: Props) {
       console.log(data);
 
       if (res.ok) {
-        onLoginSuccess(data.nombre);
+        onLoginSuccess(data.nombre); // Llama al callback si login fue exitoso
       } else {
         setError(data.error || "Error desconocido");
       }
@@ -60,8 +61,10 @@ function Login({ opened, onClose, onLoginSuccess }: Props) {
             Iniciar sesión
           </Title>
 
+          {/* Formulario de login */}
           <form onSubmit={handleSubmit} method="POST">
             <Stack>
+              {/* Campo usuario */}
               <TextInput
                 label="Usuario"
                 placeholder="Tu nombre de usuario"
@@ -70,6 +73,7 @@ function Login({ opened, onClose, onLoginSuccess }: Props) {
                 required
               />
 
+              {/* Campo contraseña */}
               <PasswordInput
                 label="Contraseña"
                 placeholder="Tu contraseña"
@@ -78,12 +82,14 @@ function Login({ opened, onClose, onLoginSuccess }: Props) {
                 required
               />
 
+              {/* Mostrar errores */}
               {error && (
                 <Notification color="red" title="Error" withCloseButton={false}>
                   {error}
                 </Notification>
               )}
 
+              {/* Botón de enviar */}
               <Button type="submit" fullWidth>
                 Entrar
               </Button>

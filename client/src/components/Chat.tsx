@@ -68,6 +68,21 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
     return () => socket.removeEventListener("message", handleMessage);
   }, [setMessages, socket]);
 
+  // Enviar mensaje
+  const sendMessage = () => {
+    if (!input || !socket) return;
+
+    const message = {
+      sender: username,
+      message: input,
+      timestamp: new Date().toISOString(),
+    };
+
+    saveHistorial(message); // Guardar en historial
+    socket.send(JSON.stringify({ type: "chat", ...message })); // Enviar por WebSocket
+    setInput(""); // Limpiar input
+  };
+
   // Mostrar error si falla la carga del historial
   if (error) {
     return (
@@ -84,22 +99,6 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
       </Card>
     );
   }
-
-  // Enviar mensaje
-  const sendMessage = () => {
-    if (!input || !socket) return;
-
-    const message = {
-      sender: username,
-      message: input,
-      timestamp: new Date().toISOString(),
-    };
-
-    saveHistorial(message); // Guardar en historial
-    socket.send(JSON.stringify({ type: "chat", ...message })); // Enviar por WebSocket
-    setInput(""); // Limpiar input
-  };
-
   // Mostrar "Cargando..." mientras se obtiene el historial
   if (loading) {
     return (

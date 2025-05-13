@@ -10,8 +10,9 @@ import {
   Title,
   Paper,
 } from "@mantine/core";
-import saveHistService from "../services/saveHistService";
 import { useFetchHistorial } from "../hooks/useFetchHistorial";
+import { useSaveHistorialService } from "../hooks/useSaveHistorialService";
+import { useDownloadHistorialService } from "../hooks/useDownloadHistorialService";
 
 interface ChatProps {
   socket: WebSocket | null; // WebSocket connection for real-time communication
@@ -22,6 +23,27 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
   const [input, setInput] = useState(""); // State to store the current input message
 
   const { error, messages, loading, setMessages } = useFetchHistorial(); // Custom hook to fetch chat history
+  const { saveHistorial } = useSaveHistorialService();
+  const {
+    downloadHistorial,
+    loading: downloading,
+    error: downloadError,
+  } = useDownloadHistorialService();
+
+  // Función para descargar el historial
+  const handleDownloadHistorial = async () => {
+    const blob = await downloadHistorial();
+    if (blob) {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `historial_${username}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    }
+  };
 
   // Handle real-time messages received via WebSocket
   useEffect(() => {
@@ -67,7 +89,7 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
       timestamp: new Date().toISOString(), // Current timestamp
     };
 
-    saveHistService(message); // Save the message to the history service
+    saveHistorial(message); // Save the message to the history service
 
     socket.send(JSON.stringify({ type: "chat", ...message })); // Send the message via WebSocket
     setInput(""); // Clear the input field
@@ -103,6 +125,23 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
         <Title order={2} ta="center" c="blue.7">
           Chat en Tiempo Real
         </Title>
+
+        {/* Botón para descargar historial */}
+        <Button
+          onClick={handleDownloadHistorial}
+          loading={downloading}
+          color="teal"
+          radius="md"
+          size="sm"
+          mb={5}
+        >
+          Descargar historial
+        </Button>
+        {downloadError && (
+          <Text c="red" size="sm" ta="center">
+            Error al descargar historial
+          </Text>
+        )}
 
         {/* Scrollable area to display chat messages */}
         <ScrollArea h={300} offsetScrollbars scrollbarSize={6}>

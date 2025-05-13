@@ -174,3 +174,9 @@ app.get("/api/view_hist", (req, res) => {
     }
   });
 });
+app.get("/api/download_hist", (req, res) => {
+  const filePath = path.join(__dirname, "historial.json");
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Content-Disposition", "attachment; filename=historial.json");
+  res.sendFile(filePath);
+});

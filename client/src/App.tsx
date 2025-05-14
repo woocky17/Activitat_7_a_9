@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Login from "./components/Login";
 import Chat from "./components/Chat";
+import Multer from "./components/Multer";
 import "@mantine/core/styles.css";
-import { Button, MantineProvider } from "@mantine/core";
+import { Button, Group, MantineProvider } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 
-const App: React.FC = () => {
+const App = () => {
   // Estado para manejar la conexión WebSocket
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
@@ -55,7 +56,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Mostrar el chat si el usuario está autenticado */}
+      {/* Mostrar el chat y Multer si el usuario está autenticado */}
       {isAuthenticated && (
         <>
           {/* Botón para cerrar sesión */}
@@ -67,8 +68,13 @@ const App: React.FC = () => {
             Cerrar sesión
           </Button>
 
-          {/* Componente del chat que recibe el socket y el nombre del usuario */}
-          <Chat socket={socket} username={user} />
+          <Group>
+            {/* Componente del chat que recibe el socket y el nombre del usuario */}
+            <Chat socket={socket} username={user} />
+
+            {/* Componente para subir y listar archivos */}
+            <Multer />
+          </Group>
         </>
       )}
     </MantineProvider>

@@ -3,7 +3,7 @@ import Login from "./components/Login";
 import Chat from "./components/Chat";
 import Multer from "./components/Multer";
 import "@mantine/core/styles.css";
-import { Button, MantineProvider } from "@mantine/core";
+import { Button, Group, MantineProvider } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 
 const App = () => {
@@ -68,11 +68,13 @@ const App = () => {
             Cerrar sesión
           </Button>
 
-          {/* Componente del chat que recibe el socket y el nombre del usuario */}
-          <Chat socket={socket} username={user} />
+          <Group>
+            {/* Componente del chat que recibe el socket y el nombre del usuario */}
+            <Chat socket={socket} username={user} />
 
-          {/* Componente para subir y listar archivos */}
-          <Multer />
+            {/* Componente para subir y listar archivos */}
+            <Multer />
+          </Group>
         </>
       )}
     </MantineProvider>

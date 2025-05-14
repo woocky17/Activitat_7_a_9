@@ -20,9 +20,7 @@ const ALLOWED_MIME_TYPES = [
 // Configuración de Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const { sala } = req.body;
-    if (!sala) return cb(new Error("Sala no especificada"), null);
-    const dir = path.join(__dirname, "../../uploads", sala);
+    const dir = path.join(__dirname, "../../uploads");
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
@@ -55,18 +53,21 @@ router.post("/enviar_doc", upload.single("file"), (req, res) => {
     originalname: req.file.originalname,
     mimetype: req.file.mimetype,
     size: req.file.size,
-    sala: req.body.sala,
   });
 });
 
-// Listar archivos de una sala
+// Listar archivos
 router.get("/list_doc", (req, res) => {
-  const sala = req.query.sala;
-  if (!sala) return res.status(400).json({ error: "Sala no especificada" });
-  const dir = path.join(__dirname, "../../uploads", sala);
+  const dir = path.join(__dirname, "../../uploads");
   fs.readdir(dir, (err, files) => {
     if (err) {
-      return res.status(200).json({ files: [] }); // Si no existe la sala, retorna lista vacía
+      if (err && err.code === "ENOENT") {
+        fs.mkdirSync(dir, { recursive: true });
+        return res.status(200).json({ files: [] }); // Si no existe la carpeta, retorna lista vacía
+      }
+      if (err) {
+        return res.status(500).json({ error: "Error al leer los archivos" });
+      }
     }
     res.json({ files });
   });
@@ -74,10 +75,8 @@ router.get("/list_doc", (req, res) => {
 
 // Descargar archivo
 router.get("/down_doc/:filename", (req, res) => {
-  const sala = req.query.sala;
   const { filename } = req.params;
-  if (!sala) return res.status(400).json({ error: "Sala no especificada" });
-  const filePath = path.join(__dirname, "../../uploads", sala, filename);
+  const filePath = path.join(__dirname, "../../uploads", filename);
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: "Archivo no encontrado" });
   }

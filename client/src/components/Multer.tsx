@@ -2,7 +2,6 @@ import React, { useRef, useState } from "react";
 import {
   Button,
   Group,
-  Paper,
   Text,
   FileInput,
   Divider,
@@ -11,6 +10,7 @@ import {
   Title,
   Stack,
   Notification,
+  Card,
 } from "@mantine/core";
 import { IconFile, IconDownload } from "@tabler/icons-react";
 
@@ -65,7 +65,13 @@ const Multer = () => {
   };
 
   return (
-    <Paper shadow="md" radius="md" p="lg" mt="xl" withBorder>
+    <Card
+      shadow="md"
+      padding="xl"
+      radius="lg"
+      withBorder
+      style={{ maxWidth: 600, margin: "auto" }}
+    >
       <Stack gap="md">
         <Title order={3}>Subir archivo</Title>
         <form onSubmit={handleUpload}>
@@ -125,7 +131,7 @@ const Multer = () => {
           ))}
         </List>
       </Stack>
-    </Paper>
+    </Card>
   );
 };
 

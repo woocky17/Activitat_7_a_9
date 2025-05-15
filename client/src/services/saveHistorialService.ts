@@ -3,7 +3,7 @@ import { MessageChat } from "../types/MessageChat";
 // Servicio para guardar el mensaje en el historial
 const saveHistService = async (message: MessageChat) => {
   try {
-    const response = await fetch("http://localhost:4000/api/save_hist", {
+    const response = await fetch("http://localhost:4000/save_hist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(message),

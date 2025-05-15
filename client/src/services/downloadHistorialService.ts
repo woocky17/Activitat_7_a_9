@@ -2,7 +2,7 @@
 export const downloadHistorialService = async (): Promise<Blob> => {
   try {
     // Realiza una petición GET al endpoint del backend
-    const response = await fetch("http://localhost:4000/api/download_hist", {
+    const response = await fetch("http://localhost:4000/download_hist", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

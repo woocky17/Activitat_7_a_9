@@ -25,7 +25,7 @@ interface ChatProps {
 const Chat: React.FC<ChatProps> = ({ socket, username }) => {
   const [input, setInput] = useState(""); // Mensaje actual escrito por el usuario
 
-  // Cargar historial desde API
+  // Cargar historial
   const { error, messages, loading, setMessages } = useFetchHistorial();
 
   // Guardar mensaje en historial

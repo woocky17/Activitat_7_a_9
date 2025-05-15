@@ -4,9 +4,9 @@ import { WebSocketServer } from "ws";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import authRouter from "./api/auth/route.js";
-import chatRoutes from "./api/chat/routes.js";
-import multerRoutes from "./api/multer/routes.js";
+import authRouter from "./services/auth/route.js";
+import chatRoutes from "./services/chat/routes.js";
+import multerRoutes from "./services/multer/routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,11 +37,12 @@ wss.on("connection", (ws) => {
   });
 
   ws.on("close", () => {
+    users.delete(ws);
     console.log("Cliente desconectado");
   });
 });
 
-app.post("/api/message", (req, res) => {
+app.post("/message", (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: "Mensaje vacío" });
 
@@ -56,11 +57,11 @@ app.post("/api/message", (req, res) => {
   res.json({ sent: true });
 });
 
-app.use("/api", authRouter);
-app.use("/api", chatRoutes);
-app.use("/api", multerRoutes);
+app.use("/", authRouter);
+app.use("/", chatRoutes);
+app.use("/", multerRoutes);
 
-app.post("/api/chat", (req, res) => {
+app.post("/chat", (req, res) => {
   const { message, sender } = req.body;
 
   if (!message || !sender) {

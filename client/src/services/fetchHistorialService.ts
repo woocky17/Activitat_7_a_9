@@ -4,7 +4,7 @@ import { MessageChat } from "../types/MessageChat";
 export const fetchHistorialService = async (): Promise<MessageChat[]> => {
   try {
     // Realiza una petición GET al endpoint del backend
-    const response = await fetch("http://localhost:4000/api/view_hist");
+    const response = await fetch("http://localhost:4000/view_hist");
 
     // Si la respuesta no es exitosa, se maneja el error y se devuelve un array vacío
     if (!response.ok) {

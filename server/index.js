@@ -4,9 +4,9 @@ import { WebSocketServer } from "ws";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import authRouter from "./api/auth/route.js";
-import chatRoutes from "./api/chat/routes.js";
-import multerRoutes from "./api/multer/routes.js";
+import authRouter from "./services/auth/route.js";
+import chatRoutes from "./services/chat/routes.js";
+import multerRoutes from "./services/multer/routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,6 +33,10 @@ wss.on("connection", (ws) => {
           client.send(JSON.stringify(message));
         }
       });
+
+      if (message.message === "ping") {
+        ws.send(JSON.stringify({ type: "pong" }));
+      }
     }
   });
 

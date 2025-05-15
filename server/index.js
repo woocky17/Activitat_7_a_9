@@ -8,9 +8,6 @@ import authRouter from "./services/auth/route.js";
 import chatRoutes from "./services/chat/routes.js";
 import multerRoutes from "./services/multer/routes.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
 const port = 4000;
 
@@ -20,8 +17,11 @@ app.use(express.json());
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
+const users = new Set();
+
 wss.on("connection", (ws) => {
   console.log("Cliente conectado");
+  users.add(ws);
 
   ws.on("message", (data) => {
     const message = JSON.parse(data);

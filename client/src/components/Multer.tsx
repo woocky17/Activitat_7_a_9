@@ -31,7 +31,7 @@ const Multer = () => {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/enviar_doc", {
+      const res = await fetch("http://localhost:4000/enviar_doc", {
         method: "POST",
         body: formData,
       });
@@ -51,7 +51,7 @@ const Multer = () => {
   // Listar archivos
   const handleList = async () => {
     try {
-      const res = await fetch(`/list_doc`);
+      const res = await fetch(`http://localhost:4000/list_doc`);
       const data = await res.json();
       setFiles(data.files || []);
     } catch {
@@ -61,7 +61,10 @@ const Multer = () => {
 
   // Descargar archivo
   const handleDownload = (filename: string) => {
-    window.open(`/down_doc/${encodeURIComponent(filename)}`, "_blank");
+    window.open(
+      `http://localhost:4000/down_doc/${encodeURIComponent(filename)}`,
+      "_blank"
+    );
   };
 
   return (

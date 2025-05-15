@@ -62,6 +62,17 @@ const Chat: React.FC<ChatProps> = ({ socket, username }) => {
       if (data.type === "chat") {
         setMessages((prev) => [...prev, data]); // Agregar nuevo mensaje al estado
       }
+      // Mostrar "pong" como mensaje del sistema
+      if (data.type === "pong") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "Sistema",
+            message: "pong",
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+      }
     };
 
     socket.addEventListener("message", handleMessage);

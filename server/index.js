@@ -20,8 +20,11 @@ app.use(express.json());
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
+const users = new Set();
+
 wss.on("connection", (ws) => {
   console.log("Cliente conectado");
+  users.add(ws);
 
   ws.on("message", (data) => {
     const message = JSON.parse(data);
